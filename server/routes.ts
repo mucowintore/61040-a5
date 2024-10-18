@@ -1,9 +1,8 @@
 import { ObjectId } from "mongodb";
 
-import { Router, getExpressRouter } from "./framework/router";
+import { getExpressRouter, Router } from "./framework/router";
 
-import { Authing, Friending, Posting, Sessioning } from "./app";
-import { PostOptions } from "./concepts/posting";
+import { Authing, Explaining, Posting, Recording, Sessioning, Transcribing, Translating, Upvoting } from "./app";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
 
@@ -83,75 +82,135 @@ class Routes {
     return Responses.posts(posts);
   }
 
+  @Router.get("/posts/:id")
+  async getPost(id: string) {
+    return await Posting.getPost(new ObjectId(id))
+  }
+
   @Router.post("/posts")
-  async createPost(session: SessionDoc, content: string, options?: PostOptions) {
+  async createPost(session: SessionDoc, title: string, mediaType: string, thumbnailUrl: string, content: string) {
     const user = Sessioning.getUser(session);
-    const created = await Posting.create(user, content, options);
+    const created = await Posting.create(user, title, mediaType, thumbnailUrl, content);
     return { msg: created.msg, post: await Responses.post(created.post) };
   }
 
-  @Router.patch("/posts/:id")
-  async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions) {
-    const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id);
-    await Posting.assertAuthorIsUser(oid, user);
-    return await Posting.update(oid, content, options);
-  }
+  // @Router.patch("/posts/:id")
+  // async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions) {
+  //   const user = Sessioning.getUser(session);
+  //   const oid = new ObjectId(id);
+  //   await Posting.assertAuthorIsUser(oid, user);
+  //   return await Posting.update(oid, content, options);
+  // }
 
   @Router.delete("/posts/:id")
   async deletePost(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id);
-    await Posting.assertAuthorIsUser(oid, user);
-    return Posting.delete(oid);
+    const postId = new ObjectId(id);
+    await Posting.assertAuthorIsUser(postId, user);
+    await Translating.deletePostTranslations(postId)
+    await Transcribing.deletePostTranscriptions(postId)
+    await Recording.deletePostRecordings(postId)
+    await Explaining.deletePostExplanations(postId)
+    await Upvoting.deleteItemUpvotes(postId)
+    return Posting.delete(postId);
+  }  
+
+  @Router.get("/posts/:postId/translations")
+  async getPostTranslations(postId: string) {
+    return await Translating.getPostTranslations(new ObjectId(postId))
   }
 
-  @Router.get("/friends")
-  async getFriends(session: SessionDoc) {
-    const user = Sessioning.getUser(session);
-    return await Authing.idsToUsernames(await Friending.getFriends(user));
+
+  @Router.put("/posts/:postId/translation")
+  async addTranslation(session: SessionDoc, postId: string, targetLanguage: string, translatedString: string) {
+    const user = Sessioning.getUser(session)
+    return await Translating.addTranslation(
+      user,
+      new ObjectId(postId),
+      targetLanguage,
+      translatedString)
   }
 
-  @Router.delete("/friends/:friend")
-  async removeFriend(session: SessionDoc, friend: string) {
-    const user = Sessioning.getUser(session);
-    const friendOid = (await Authing.getUserByUsername(friend))._id;
-    return await Friending.removeFriend(user, friendOid);
+  @Router.delete("/translations/:translationId")
+  async deleteTranslation(session: SessionDoc, translationId: string) {
+    const userId = Sessioning.getUser(session)
+    return await Translating.deleteTranslation(userId, new ObjectId(translationId))
   }
 
-  @Router.get("/friend/requests")
-  async getRequests(session: SessionDoc) {
-    const user = Sessioning.getUser(session);
-    return await Responses.friendRequests(await Friending.getRequests(user));
+  @Router.get("/posts/:postId/transcriptions")
+  async getPostTranscriptions(postId: string){
+    return await Transcribing.getPostTranscriptions(new ObjectId(postId))
   }
 
-  @Router.post("/friend/requests/:to")
-  async sendFriendRequest(session: SessionDoc, to: string) {
-    const user = Sessioning.getUser(session);
-    const toOid = (await Authing.getUserByUsername(to))._id;
-    return await Friending.sendRequest(user, toOid);
+  @Router.put("/posts/:postId/transcription")
+  async addTranscription(session: SessionDoc, postId: string, transcript: string){
+    const user = Sessioning.getUser(session)
+    const postOid = new ObjectId(postId)
+    await Posting.assertIsListenable(postOid)
+    return await Transcribing.addTranscription(user, postOid, transcript)
   }
 
-  @Router.delete("/friend/requests/:to")
-  async removeFriendRequest(session: SessionDoc, to: string) {
-    const user = Sessioning.getUser(session);
-    const toOid = (await Authing.getUserByUsername(to))._id;
-    return await Friending.removeRequest(user, toOid);
+  @Router.delete("/transcriptions/:transcriptionId")
+  async deleteTranscription(session: SessionDoc, transcriptionId: string){
+    const userOid = Sessioning.getUser(session)
+    return await Transcribing.deleteTranscription(userOid, new ObjectId(transcriptionId))
   }
 
-  @Router.put("/friend/accept/:from")
-  async acceptFriendRequest(session: SessionDoc, from: string) {
-    const user = Sessioning.getUser(session);
-    const fromOid = (await Authing.getUserByUsername(from))._id;
-    return await Friending.acceptRequest(fromOid, user);
+  @Router.get("/posts/:postId/recordings")
+  async getPostRecordings(postId: string){
+    return await Recording.getPostRecordings(new ObjectId(postId))
   }
 
-  @Router.put("/friend/reject/:from")
-  async rejectFriendRequest(session: SessionDoc, from: string) {
-    const user = Sessioning.getUser(session);
-    const fromOid = (await Authing.getUserByUsername(from))._id;
-    return await Friending.rejectRequest(fromOid, user);
+  @Router.put("/posts/:postId/recording")
+  async addRecording(session: SessionDoc, postId: string, audioUrl: string){
+    const userOid = Sessioning.getUser(session)
+    const postOid = new ObjectId(postId)
+    await Posting.assertIsReadable(postOid)
+    return await Recording.addRecording(userOid, postOid, audioUrl)
   }
+
+  @Router.delete("/recordings/:recordingId")
+  async deleteRecording(session: SessionDoc, recordingId: string){
+    const userOid = Sessioning.getUser(session)
+    return await Recording.deleteRecording(userOid, new ObjectId(recordingId))
+  }
+
+  @Router.get("/posts/:postId/explanations")
+  async getPostExplanations(postId: string){
+    return await Explaining.getPostExplanations(new ObjectId(postId))
+  }
+
+  @Router.put("/posts/:postId/explanation")
+  async addExplanation(session: SessionDoc, postId: string, entry: string, definition: string, example: string){
+    const userOid = Sessioning.getUser(session)
+    const postOid = new ObjectId(postId)
+    return await Explaining.addExplanation(userOid, postOid, entry, definition, example)
+  }
+
+  @Router.delete("/explanations/:explanationId")
+  async deleteExplanation(session: SessionDoc, explanationId: string){
+    const userOid = Sessioning.getUser(session)
+    return await Explaining.deleteExplanation(userOid, new ObjectId(explanationId))
+  }
+
+  
+  @Router.put("/upvote/:contentId")
+  async upvoteContent(session: SessionDoc, contentId: string) {
+    const user = Sessioning.getUser(session)
+    return await Upvoting.upvoteContent(user, new ObjectId(contentId))
+  }
+
+  @Router.get("/upvotes/:contentId")
+  async getUpvotes(contentId: string) {
+    return await Upvoting.getUpvotes(new ObjectId(contentId))
+  }
+
+  @Router.delete("/upvote/:contentId")
+  async removeUpvote(session: SessionDoc, contentId: string) {
+    const user = Sessioning.getUser(session)
+    return await Upvoting.deleteUpvote(user, new ObjectId(contentId))
+  }
+
 }
 
 /** The web app. */
