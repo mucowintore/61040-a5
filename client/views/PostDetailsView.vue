@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 import { fetchy } from "../utils/fetchy";
 
 const route = useRoute()
-let post: string
+let post: any
 let username: string
 const loaded = ref(false)
 
@@ -20,7 +20,7 @@ const getPost = async (postId: string) => {
 
 onBeforeMount(async () => {
     console.log(`Route id: ${route.params.id}`)
-    await getPost(route.params.id)
+    await getPost((route.params.id) as string)
     loaded.value=true
 })
 </script>
