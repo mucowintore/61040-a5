@@ -5,6 +5,10 @@
   --base-bg: #f1f3f5;
 }
 
+body {
+  font-family: montserrat;
+}
+
 button.btn-small {
   font-size: 80%;
 }

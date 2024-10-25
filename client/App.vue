@@ -55,6 +55,10 @@ onBeforeMount(async () => {
 
 <style scoped>
 @import "./assets/toast.css";
+@font-face {
+  font-family: montserrat;
+  src: url(./assets/montserrat.ttf);
+}
 
 nav {
   padding: 1em 2em;

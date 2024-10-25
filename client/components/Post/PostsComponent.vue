@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import router from '@/router';
+import { usePostStore } from '@/stores/post';
 import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
 import PostPreview from "./PostPreview.vue";
 
 const loaded = ref(false);
 let posts = ref<Array<Record<string, string>>>([]);
+
+const { setPost } = usePostStore()
 
 async function getPosts() {
   let postResults;
@@ -18,7 +21,8 @@ async function getPosts() {
   posts.value = postResults;
 }
 
-const postClicked = (postId: string) => {
+const postClicked = async (postId: string) => {
+  await setPost(postId)
   void router.push({ path: `/postDetails/${postId}`})
 }
 

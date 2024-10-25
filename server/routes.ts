@@ -31,6 +31,12 @@ class Routes {
     return await Authing.getUserByUsername(username);
   }
 
+  @Router.get("/users/userId/:userId")
+  @Router.validate(z.object({ userId: z.string().min(1) }))
+  async getUserById(userId: string) {
+    return await Authing.getUserById(new ObjectId(userId));
+  }
+
   @Router.post("/users")
   async createUser(session: SessionDoc, username: string, password: string) {
     Sessioning.isLoggedOut(session);
@@ -93,14 +99,6 @@ class Routes {
     const created = await Posting.create(user, title, mediaType, thumbnailUrl, content);
     return { msg: created.msg, post: await Responses.post(created.post) };
   }
-
-  // @Router.patch("/posts/:id")
-  // async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions) {
-  //   const user = Sessioning.getUser(session);
-  //   const oid = new ObjectId(id);
-  //   await Posting.assertAuthorIsUser(oid, user);
-  //   return await Posting.update(oid, content, options);
-  // }
 
   @Router.delete("/posts/:id")
   async deletePost(session: SessionDoc, id: string) {
