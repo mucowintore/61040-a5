@@ -100,7 +100,10 @@ const onDeleteButtonClicked = async () => {
 }
 .example {
     margin: 0;
-    height: 18px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
     margin-top: 8px;
     color: rgba(0, 0, 0, 0.6)
 }

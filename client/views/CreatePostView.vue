@@ -30,28 +30,28 @@ const createPost = async (title: string, thumbnailUrl: string, mediaType: string
 <template>
   <main>
     <div class="container">
-      <h1 class="title">Create Post</h1>
+      <p class="title">Create Post</p>
       <form class="form_input" @submit.prevent="createPost(title, thumbnailUrl, mediaType, content)">
-        <h3 class="input_header"><strong>Title</strong></h3>
+        <h3 class="input_header">Title</h3>
         <textarea class="input_value" v-model="title" required></textarea>
-        <h3 class="input_header"><strong>Content type</strong></h3>
+        <h3 class="input_header">Content type</h3>
         <select style="margin-bottom: 20px" v-model="mediaType">
           <option>text</option>
           <option>audio</option>
           <option>video</option>
         </select>
-        <h3 class="input_header"><strong>Thumbnail URL</strong></h3>
+        <h3 class="input_header">Thumbnail URL</h3>
         <textarea  class="input_value" v-model="thumbnailUrl" required></textarea>
         <div v-if="mediaType==='text'">
-          <h3 class="input_header"><strong>Content text</strong></h3>
+          <h3 class="input_header">Content text</h3>
         <textarea  class="input_text_value" v-model="content" required></textarea>
         </div>
         <div v-else-if="mediaType==='audio'">
-          <h3 class="input_header"><strong>Audio URL</strong></h3>
+          <h3 class="input_header">Audio URL</h3>
           <textarea  class="input_value" v-model="content" required></textarea>
         </div>
         <div v-else>
-          <h3 class="input_header"><strong>Video URL</strong></h3>
+          <h3 class="input_header">Video URL</h3>
         <textarea  class="input_value" v-model="content" required></textarea>
         </div>
         <button type="submit">Post</button>
@@ -71,14 +71,18 @@ const createPost = async (title: string, thumbnailUrl: string, mediaType: string
   width: 400px;
   margin-bottom: 20px;
 }
-
+.title {
+  font-family: montserrat;
+  font-size: 30px;
+  font-weight: 700;
+  color: #006B5E;
+}
 .input_value {
   height: 24px;
   width: 400px;
   margin-bottom: 20px;
 }
 .container {
-  background-color: aliceblue;
   display: flex;
   flex-direction: column;
   margin-top: 64px;
