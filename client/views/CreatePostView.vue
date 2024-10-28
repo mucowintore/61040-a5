@@ -31,6 +31,7 @@ const createPost = async (title: string, thumbnailUrl: string, mediaType: string
   <main>
     <div class="container">
       <p class="title">Create Post</p>
+      <p class="description">Add your contribution to Akaranga by posting a new text, audio or video using the form below.</p>
       <form class="form_input" @submit.prevent="createPost(title, thumbnailUrl, mediaType, content)">
         <h3 class="input_header">Title</h3>
         <textarea class="input_value" v-model="title" required></textarea>
@@ -76,6 +77,11 @@ const createPost = async (title: string, thumbnailUrl: string, mediaType: string
   font-size: 30px;
   font-weight: 700;
   color: #006B5E;
+  margin-bottom: 8px;
+}
+.description {
+  font-weight: 500;
+  margin-bottom: 48px;
 }
 .input_value {
   height: 24px;
