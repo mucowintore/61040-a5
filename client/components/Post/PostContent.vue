@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { usePostStore } from '@/stores/post';
-import { onBeforeMount, ref } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute()
 const { post, postAuthor, setPost } = usePostStore()
-const loaded = ref(false)
+const loaded = ref(true)
 
-onBeforeMount(async () => {
-    console.log(`Route id: ${route.params.id}`)
-    const postId = (route.params.id) as string 
-    await setPost(postId)
-    loaded.value = true
-})
+// onBeforeMount(async () => {
+//     console.log(`Route id: ${route.params.id}`)
+//     const postId = (route.params.id) as string 
+//     await setPost(postId)
+//     loaded.value = true
+// })
 
 </script>
 

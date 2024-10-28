@@ -9,14 +9,13 @@ const { loginUser, updateSession } = useUserStore();
 
 async function login() {
   await loginUser(username.value, password.value);
-  void updateSession();
-  void router.push({ name: "Home" });
+  await updateSession();
+  void router.push({ path: `/` });
 }
 </script>
 
 <template>
   <form class="pure-form pure-form-aligned" @submit.prevent="login">
-    <h3>Login</h3>
     <fieldset>
       <div class="pure-control-group">
         <label for="aligned-name">Username</label>
